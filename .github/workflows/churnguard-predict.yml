@@ -91,6 +91,18 @@ jobs:
           SMTP_RECIPIENTS: ${{ secrets.SMTP_RECIPIENTS }}
         run: python -m scripts.notify_risks
 
+
+      - name: Send high-risk email notifications
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_SENDER: ${{ secrets.SMTP_SENDER }}
+          SMTP_RECIPIENTS: ${{ secrets.SMTP_RECIPIENTS }}
+        run: python -m scripts.notify_risks
+
+
       - name: Commit generated predictions
         if: success()
         run: |
