@@ -1,14 +1,12 @@
-
-name: ChurnGuard - Predict changed datasets
+name: ChurnGuard - Automated Churn Prediction
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - 'Capstone_Project_CustomerChurn/data_to_predict/**/*.csv'
-      - 'Capstone_Project_CustomerChurn/data_to_predict/**/*.xlsx'
-
+      - 'data_to_predict/**/*.csv'
+      - 'data_to_predict/**/*.xlsx'
+      - '!data_to_predict/**/*_predictions.csv'
   workflow_dispatch:
 
 permissions:
