@@ -28,6 +28,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: true
+          lfs: true
 
       - name: Set up Python
         uses: actions/setup-python@v7
@@ -61,11 +62,23 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
         run: |
           python - <<'PY'
-          import json,joblib
+          import json
+          import joblib
           from pathlib import Path
 
-          schema=json.loads(Path('models/feature_schema.json').read_text(encoding='utf-8'))
-          model=joblib.load(Path('models')/schema['model_file'])
+          schema = json.loads(Path('models/feature_schema.json').read_text(encoding='utf-8'))
+          model_path = Path('models') / schema['model_file']
+
+          print(f'Model path: {model_path}')
+          print(f'Model size: {model_path.stat().st_size:,} bytes')
+
+          with model_path.open('rb') as f:
+              header = f.read(80)
+
+          if header.startswith(b'version https://git-lfs.github.com/spec/v1'):
+              raise RuntimeError('Git LFS pointer detected instead of actual model')
+
+          model = joblib.load(model_path)
           print(f'Model loaded: {type(model.named_steps["classifier"]).__name__}')
           PY
 
