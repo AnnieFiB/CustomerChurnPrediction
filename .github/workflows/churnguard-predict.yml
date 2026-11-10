@@ -26,9 +26,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
+          lfs: true
           fetch-depth: 0
           persist-credentials: true
-          lfs: true
 
       - name: Set up Python
         uses: actions/setup-python@v7
@@ -62,23 +62,11 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
         run: |
           python - <<'PY'
-          import json
-          import joblib
+          import json,joblib
           from pathlib import Path
 
-          schema = json.loads(Path('models/feature_schema.json').read_text(encoding='utf-8'))
-          model_path = Path('models') / schema['model_file']
-
-          print(f'Model path: {model_path}')
-          print(f'Model size: {model_path.stat().st_size:,} bytes')
-
-          with model_path.open('rb') as f:
-              header = f.read(80)
-
-          if header.startswith(b'version https://git-lfs.github.com/spec/v1'):
-              raise RuntimeError('Git LFS pointer detected instead of actual model')
-
-          model = joblib.load(model_path)
+          schema=json.loads(Path('models/feature_schema.json').read_text(encoding='utf-8'))
+          model=joblib.load(Path('models')/schema['model_file'])
           print(f'Model loaded: {type(model.named_steps["classifier"]).__name__}')
           PY
 
@@ -93,6 +81,16 @@ jobs:
           else
             python -m scripts.predict_changed
           fi
+      
+      - name: Send high-risk email notifications
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_SENDER: ${{ secrets.SMTP_SENDER }}
+          SMTP_RECIPIENTS: ${{ secrets.SMTP_RECIPIENTS }}
+        run: python -m scripts.notify_risks
 
 
       - name: Send high-risk email notifications
