@@ -81,7 +81,7 @@ jobs:
           else
             python -m scripts.predict_changed
           fi
-      
+
       - name: Send high-risk email notifications
         env:
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
